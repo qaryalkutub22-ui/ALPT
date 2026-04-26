@@ -41,7 +41,11 @@ import {
   Lock,
   KeyRound,
   LogIn,
-  LogOut
+  LogOut,
+  Search,
+  Check,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 // Inisialisasi Firebase
@@ -103,6 +107,9 @@ const App = () => {
   // Status Login Admin
   const [isAdminAuth, setIsAdminAuth] = useState(false);
   const [adminPassInput, setAdminPassInput] = useState('');
+
+  // Status Review Jawaban
+  const [showReview, setShowReview] = useState(false);
 
   const [modal, setModal] = useState({ show: false, message: '', onConfirm: null });
   const [feedback, setFeedback] = useState({ show: false, message: '', type: 'info' });
@@ -183,6 +190,7 @@ const App = () => {
     } else if (view === 'home') {
       setTimeLeft(50 * 60);
       setTimerActive(false);
+      setShowReview(false);
     }
   }, [view, submitted]);
 
@@ -191,10 +199,8 @@ const App = () => {
     setTimeout(() => setFeedback({ show: false, message: '', type: 'info' }), 3000);
   };
 
-  // Fungsi Login Admin
   const handleAdminLogin = (e) => {
     e.preventDefault();
-    // Ganti 'admin123' dengan kata sandi yang Anda inginkan
     if (adminPassInput === 'K#7v!nZ9$mP2*qL') {
       setIsAdminAuth(true);
       showFeedback("تم تسجيل الدخول بنجاح", "success");
@@ -476,7 +482,6 @@ const App = () => {
         {view === 'admin' && (
           <div className="max-w-7xl mx-auto space-y-8 text-right" dir="rtl">
             {!isAdminAuth ? (
-              /* MENU LOGIN ADMIN */
               <div className="max-w-md mx-auto py-12">
                 <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl border-t-[8px] border-emerald-800 text-center">
                   <div className="bg-emerald-50 text-emerald-800 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -504,7 +509,6 @@ const App = () => {
                 </div>
               </div>
             ) : (
-              /* HALAMAN ADMIN (SUDAH LOGIN) */
               <>
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
                   <div>
@@ -662,15 +666,15 @@ const App = () => {
         {view === 'test' && (
           <div className="max-w-4xl mx-auto pb-40" dir="rtl">
             {submitted ? (
-              <div className="max-w-2xl mx-auto p-2 text-center">
-                <div className="bg-white rounded-[2.5rem] shadow-2xl p-12 border-t-[12px] border-emerald-800 overflow-hidden relative">
+              <div className="max-w-3xl mx-auto p-2 text-center">
+                <div className="bg-white rounded-[2.5rem] shadow-2xl p-10 border-t-[12px] border-emerald-800 overflow-hidden relative">
                   <div className={`absolute top-0 left-0 w-full h-2 ${gradeInfo.bg}`}></div>
                   
-                  <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-8 shadow-md ${gradeInfo.bg} ${gradeInfo.color}`}>
+                  <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-6 shadow-md ${gradeInfo.bg} ${gradeInfo.color}`}>
                     <Award size={48} strokeWidth={2.5} />
                   </div>
                   
-                  <h2 className="text-4xl font-black text-slate-900 mb-3">انتهى الاختبار!</h2>
+                  <h2 className="text-4xl font-black text-slate-900 mb-3 font-arabic">انتهى الاختبار!</h2>
                   
                   {timeLeft === 0 && (
                     <div className="mb-4 flex items-center justify-center gap-2 bg-red-50 text-red-500 px-4 py-2 rounded-xl border border-red-100 font-bold mx-auto w-fit text-sm animate-pulse">
@@ -679,17 +683,92 @@ const App = () => {
                     </div>
                   )}
 
-                  <p className="text-slate-500 text-xl font-medium mb-10">لقد تم حساب نتيجتك النهائية بناءً على أدائك:</p>
+                  <p className="text-slate-500 text-xl font-medium mb-10">لقد تم حساب نتيجتك النهائية بناءً pada أدائك:</p>
                   
-                  <div className="flex flex-col items-center justify-center mb-12">
-                    <div className="text-8xl font-black text-emerald-700 leading-none mb-4 drop-shadow-lg tracking-tighter">{score}</div>
-                    <div className={`text-3xl font-black px-10 py-3.5 rounded-[1.5rem] ${gradeInfo.bg} ${gradeInfo.color} border-2 border-current`}>
+                  <div className="flex flex-col items-center justify-center mb-10">
+                    <div className="text-8xl font-black text-emerald-700 leading-none mb-4 drop-shadow-lg tracking-tighter font-arabic">{score}</div>
+                    <div className={`text-3xl font-black px-10 py-3.5 rounded-[1.5rem] ${gradeInfo.bg} ${gradeInfo.color} border-2 border-current font-arabic`}>
                       {gradeInfo.text}
                     </div>
                   </div>
 
-                  <button onClick={() => {setAnswers({}); setSubmitted(false); setView('home');}} className="bg-emerald-800 text-white px-12 py-4 rounded-2xl font-black text-xl w-full shadow-lg hover:bg-emerald-900 transition-all">العودة للرئيسية</button>
+                  <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                    <button 
+                      onClick={() => {setAnswers({}); setSubmitted(false); setView('home');}} 
+                      className="bg-slate-100 text-slate-700 px-10 py-4 rounded-2xl font-black text-xl w-full sm:w-1/2 hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
+                    >
+                      <LogOut size={20} />
+                      العودة للرئيسية
+                    </button>
+                    <button 
+                      onClick={() => setShowReview(!showReview)} 
+                      className="bg-emerald-800 text-white px-10 py-4 rounded-2xl font-black text-xl w-full sm:w-1/2 shadow-lg hover:bg-emerald-900 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Search size={20} />
+                      {showReview ? "إخفاء المراجعة" : "مراجعة الإجابات"}
+                    </button>
+                  </div>
                 </div>
+
+                {/* MODUL REVIEW JAWABAN */}
+                {showReview && (
+                  <div className="mt-12 space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <h3 className="text-3xl font-black text-emerald-900 border-b-4 border-emerald-100 pb-2 inline-block">مراجعة الإجابات</h3>
+                    <div className="space-y-12">
+                      {getSortedSections().map((sec) => (
+                        <div key={sec.id} className="bg-white p-8 rounded-[2rem] shadow-lg border border-slate-100 text-right">
+                          <div className="flex items-center gap-3 mb-8 border-b border-slate-50 pb-4">
+                            <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg text-xs font-black uppercase">
+                              {sec.type === 'masmu' ? 'استماع' : sec.type === 'maqru' ? 'قراءة' : 'مفردات'}
+                            </span>
+                            <h4 className="text-2xl font-black text-slate-900">{sec.title}</h4>
+                          </div>
+
+                          <div className="space-y-10">
+                            {sec.questions?.map((q, qIdx) => {
+                              const userAns = answers[`${sec.id}_${qIdx}`];
+                              const isCorrect = userAns === q.correct;
+
+                              return (
+                                <div key={qIdx} className="space-y-4">
+                                  <div className="flex items-start gap-4">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black shrink-0 ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
+                                      {isCorrect ? <Check size={18} /> : <X size={18} />}
+                                    </div>
+                                    <h5 className="text-xl font-bold text-slate-800 leading-snug">{qIdx + 1}. {q.text}</h5>
+                                  </div>
+
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mr-12">
+                                    {q.options.map((opt, oIdx) => {
+                                      let statusStyle = "bg-slate-50 border-slate-100 text-slate-400";
+                                      
+                                      if (oIdx === q.correct) {
+                                        statusStyle = "bg-emerald-50 border-emerald-500 text-emerald-900 font-bold ring-2 ring-emerald-100";
+                                      } else if (oIdx === userAns && !isCorrect) {
+                                        statusStyle = "bg-red-50 border-red-500 text-red-900 font-bold ring-2 ring-red-100";
+                                      }
+
+                                      return (
+                                        <div 
+                                          key={oIdx} 
+                                          className={`p-4 rounded-xl border-2 transition-all flex items-center justify-between text-lg ${statusStyle}`}
+                                        >
+                                          <span>{opt}</span>
+                                          {oIdx === q.correct && <Check size={16} className="text-emerald-600" />}
+                                          {oIdx === userAns && !isCorrect && <X size={16} className="text-red-600" />}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <>
