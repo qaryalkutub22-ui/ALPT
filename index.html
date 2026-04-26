@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معهد نور العلم بلاهات - لوحة النتائج</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+        body { font-family: 'Tajawal', sans-serif; background-color: #f1f5f9; margin: 0; }
+        .option-btn { transition: all 0.2s ease; border: 2px solid #e2e8f0; }
+        .option-btn:hover { border-color: #3b82f6; background-color: #f8fafc; }
+        .selected-option { background-color: #eff6ff !important; border-color: #3b82f6 !important; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+        .input-field { border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px; width: 100%; outline: none; transition: border-color 0.3s; }
+        .input-field:focus { border-color: #059669; }
+        .logo-box { width: 100px; height: 100px; background: linear-gradient(135deg, #006633 0%, #00a859 100%); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; box-shadow: 0 10px 20px rgba(0,102,51,0.2); }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #059669; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f8fafc; color: #64748b; font-weight: bold; }
+        #custom-modal, #login-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-content { background: white; padding: 2rem; border-radius: 1.5rem; max-width: 400px; width: 100%; text-align: center; }
+        .review-card { background: white; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1rem; border-right: 5px solid #cbd5e1; }
+        .review-card.correct { border-right-color: #10b981; }
+        .review-card.incorrect { border-right-color: #ef4444; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Modal Peringatan -->
+    <div id="custom-modal">
+        <div class="modal-content">
+            <div id="modal-icon" class="text-4xl mb-3">⚠️</div>
+            <h3 id="modal-title" class="text-xl font-bold mb-2">تنبيه</h3>
+            <p id="modal-message" class="text-gray-600 mb-6"></p>
+            <div class="flex gap-3 justify-center">
+                <button id="modal-confirm" class="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold">موافق</button>
+                <button id="modal-cancel" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Login Guru -->
+    <div id="login-modal">
+        <div class="modal-content shadow-2xl">
+            <div class="text-4xl mb-3">🔐</div>
+            <h3 class="text-xl font-bold mb-2">دخول المعلم</h3>
+            <p class="text-gray-600 mb-4 text-sm">يرجى إدخال اسم المستخدم وكلمة المرور</p>
+            <input type="text" id="teacher-username" class="input-field text-center mb-3" placeholder="اسم المستخدم">
+            <div class="mb-6 relative">
+                <input type="password" id="teacher-pin" class="input-field text-center pl-12" placeholder="كلمة المرور">
+                <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 left-0 w-12 flex items-center justify-center text-gray-400 focus:outline-none">
+                    <svg id="eye-open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg id="eye-closed" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><circle cx="12" cy="12" r="3"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="verifyTeacherLogin()" class="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold flex-1">دخول</button>
+                <button onclick="closeLoginModal()" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold flex-1">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. Sampul -->
+    <div id="cover-page" class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center">
+        <div class="logo-box"><span class="text-5xl text-white">🕌</span></div>
+        <div class="text-center mb-6">
+            <h2 class="text-lg font-bold text-gray-500 tracking-widest mb-1">PONDOK PESANTREN</h2>
+            <h1 class="text-3xl font-black text-emerald-700 mb-2">NURUL ILMI</h1>
+            <div class="h-1 w-20 bg-emerald-500 mx-auto rounded-full mb-3"></div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-1">معهد نور العلم</h2>
+            <p class="text-sm font-bold text-gray-400">LAHAT - SUMSEL</p>
+        </div>
+        <div class="w-full bg-emerald-50 rounded-2xl p-5 mb-8 text-center">
+            <h3 class="text-emerald-800 font-black text-xl mb-1">الاختبار اليومي الثاني</h3>
+            <p class="text-emerald-600 font-bold">مادة الفقه - الصف الثالث المتوسط</p>
+        </div>
+        <div class="w-full space-y-4 mb-6">
+            <input type="text" id="student-name" class="input-field text-right" placeholder="اسم الطالب...">
+            <input type="text" id="student-class" class="input-field text-right" placeholder="الفصل">
+        </div>
+        <button onclick="startQuiz()" class="w-full bg-emerald-600 text-white font-black py-4 rounded-2xl shadow-xl flex items-center justify-center gap-2 mb-4"><span>ابدأ الاختبار الآن</span>🚀</button>
+        <button onclick="openLoginModal()" class="text-gray-400 text-xs font-bold">دخول المعلم (Dashboard)</button>
+    </div>
+
+    <!-- 2. Kuis -->
+    <div id="quiz-container" class="hidden max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div class="bg-emerald-700 p-6 text-white flex justify-between items-center">
+            <button onclick="goToCover()" class="text-xs bg-white/20 px-3 py-2 rounded-lg">🏠 الرئيسية</button>
+            <div class="text-center"><h2 class="text-lg font-bold">معهد نور العلم</h2><p id="display-student-info" class="text-xs opacity-80"></p></div>
+            <div class="w-10"></div>
+        </div>
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <span id="question-counter" class="text-sm font-bold text-emerald-600">السؤال 1 من 20</span>
+                <div class="w-32 bg-gray-200 h-2 rounded-full overflow-hidden"><div id="progress-bar" class="bg-emerald-500 h-full" style="width: 5%"></div></div>
+            </div>
+            <h3 id="question-text" class="text-xl font-bold text-gray-800 mb-6 text-right">جاري التحميل...</h3>
+            <div id="options-container" class="space-y-3"></div>
+            <div class="mt-8 flex gap-3">
+                <button onclick="nextQuestion()" id="next-nav-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-xl font-bold">التالي</button>
+                <button onclick="prevQuestion()" id="prev-btn" class="flex-1 bg-gray-100 text-gray-600 py-4 rounded-xl font-bold">السابق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Hasil -->
+    <div id="result-screen" class="hidden max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center">
+        <div class="text-6xl mb-4">🎖️</div>
+        <h2 class="text-3xl font-black mb-1">النتيجة النهائية</h2>
+        <p id="result-student-name" class="text-emerald-600 font-bold mb-4"></p>
+        <div class="bg-blue-50 py-6 rounded-2xl mb-6"><p id="final-score" class="text-5xl font-black text-blue-600">0 / 20</p></div>
+        <div class="flex flex-col gap-3">
+            <button onclick="loadReview()" class="bg-blue-600 text-white py-4 rounded-xl font-bold">مراجعة الإجابات</button>
+            <button onclick="location.reload()" class="bg-emerald-600 text-white py-4 rounded-xl font-bold">إعادة الاختبار</button>
+        </div>
+    </div>
+
+    <!-- 4. Review -->
+    <div id="review-page" class="hidden max-w-2xl w-full flex flex-col h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div class="bg-emerald-700 p-6 text-white flex justify-between items-center"><h2 class="text-xl font-bold">مراجعة الإجابات 📝</h2><button onclick="switchView('results')" class="bg-white/20 px-4 py-2 rounded-lg font-bold">إغلاق</button></div>
+        <div id="review-list" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50"></div>
+    </div>
+
+    <!-- 5. Dashboard -->
+    <div id="dashboard-page" class="hidden max-w-5xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden mt-8 self-start">
+        <div class="bg-slate-800 p-6 text-white flex justify-between items-center">
+            <h2 class="text-xl font-bold">لوحة النتائج 📊</h2>
+            <div class="flex gap-2">
+                <button id="delete-selected-btn" onclick="deleteSelected()" class="hidden bg-red-600 px-4 py-2 rounded-lg text-xs font-bold">حذف المحدد</button>
+                <button onclick="exportCSV()" class="bg-emerald-600 px-4 py-2 rounded-lg text-xs font-bold">تصدير CSV</button>
+                <button onclick="switchView('cover')" class="bg-gray-600 px-4 py-2 rounded-lg text-xs font-bold">خروج</button>
+            </div>
+        </div>
+        <div class="p-6 overflow-x-auto">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="w-12"><input type="checkbox" onchange="toggleSelectAll(this)"></th>
+                        <th>الاسم</th>
+                        <th>الفصل</th>
+                        <th>الدرجة</th>
+                        <th>التاريخ</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                    <tr><td colspan="5" class="text-center py-10 text-gray-400">لا توجد نتائج مسجلة</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYF740-reiHPYvQ9L2dceWwioSPzHI4RY",
+            authDomain: "web-nurul-ilmi.firebaseapp.com",
+            projectId: "web-nurul-ilmi",
+            storageBucket: "web-nurul-ilmi.firebasestorage.app",
+            messagingSenderId: "338149861826",
+            appId: "1:338149861826:web:d633b7c5237477ed830e5b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        window.db = db;
+        window.auth = auth;
+        window.appId = 'web-nurul-ilmi'; 
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
+        window.getDocs = getDocs;
+        window.serverTimestamp = serverTimestamp;
+        window.onSnapshot = onSnapshot;
+
+        async function startAuth() {
+            try {
+                await signInAnonymously(auth);
+            } catch (err) {
+                console.error("Firebase Login Error:", err);
+            }
+        }
+        startAuth();
+
+        onAuthStateChanged(auth, user => {
+            window.currentUser = user;
+            if (user && window.currentView === 'dashboard') {
+                listenToResults();
+            }
+        });
+    </script>
+
+    <script>
+        const questions = [
+            { q: "المعنى اللغوي للجهاد هو:", a: ["القتال بالسلاح فقط.", "بذل الجهد والطاقة من قول أو فعل.", "السفر لطلب العلم.", "الصبر على المصائب."], c: 1 },
+            { q: "ينقسم الجهاد في الإسلام إلى ثلاثة أنواع، والمقصود من دراستنا في الكتاب هو الجهاد بمعنى:", a: ["جهاد المال.", "جهاد النفس.", "القتال في سبيل الله لإعلاء كلمة الله.", "جهاد اللسان."], c: 2 },
+            { q: "ما حكم الجهاد في سبيل الله؟", a: ["فرض عين على كل مسلم.", "فرض كفاية (إذا قام به البعض سقط عن الآخرين).", "سنة مؤكدة.", "مستحب فقط."], c: 1 },
+            { q: "يصبح الجهاد \"فرض عين\" في حالات، إلا:", a: ["إذا حاصر العدو البلد.", "إذا أمر ولي الأمر (الحاكم) الناس بالجهاد.", "إذا لم يحضر المسلم ساحة القتال.", "إذا احتل العدو البلد."], c: 2 },
+            { q: "من شروط وجوب الجهاد في سبيل الله:", a: ["الغنى وكثرة المال.", "العقل، والذكورة، والبلوغ، وإذن ولي الأمر.", "السفر لبلاد بعيدة.", "حفظ القرآن الكريم كاملاً."], c: 1 },
+            { q: "جهاد النفس يكون بأربع أمور، إلا:", a: ["تعلم العلم الضار.", "العمل بالعلم.", "دعوة الناس إلى العلم.", "الصبر على الأذى في سبيل الدعوة إلى العلم."], c: 0 },
+            { q: "من آداب الجهاد في الإسلام هي:", a: ["قطع الأشجار وتخريب المباني.", "قتل النساء والأطفال والشيوخ.", "قتل الرهبان في صوامعهم.", "المعاملة بالمثل وعدم الاعتداء."], c: 3 },
+            { q: "الغاية الأساسية من الجهاد في الإسلام هي:", a: ["السيطرة على خيرات الشعوب.", "الانتقام من الآخرين.", "إعلاء كلمة الله ودفع الظلم والعدوان.", "الشهرة ونيل المديح."], c: 2 },
+            { q: "ما حكم الجهاد على النساء؟", a: ["واجب.", "سنة.", "لا يجب.", "مكروه."], c: 2 },
+            { q: "بعض العبادة التي سماها النبي صلى الله عليه وسلم جهاداً هي:", a: ["بر الوالدين.", "الحج.", "جواب (أ) و (ب) كلاهما صحيح.", "لا يوجد جواب صحيح."], c: 2 },
+            { q: "من أعظم ثمار الجهاد في سبيل الله بالنسبة للفرد نيل رضا الله والفوز بالجنة.", a: ["صح", "خطأ"], c: 0 },
+            { q: "جهاد الشيطان يكون بالخوف منه دائماً.", a: ["صح", "خطأ"], c: 1 },
+            { q: "لا يشترط لخروج الابن للجهاد التطوعي إذن الوالدين.", a: ["صح", "خطأ"], c: 1 },
+            { q: "لا يجب الإخلاص لله والصبر على المجاهد.", a: ["صح", "خطأ"], c: 1 },
+            { q: "من مات في الجهاد في سبيل الله يسمى بشهيد.", a: ["صح", "خطأ"], c: 0 },
+            { q: "يجوز قتل من لا يشارك في القتال.", a: ["صح", "خطأ"], c: 1 },
+            { q: "من الجهاد في سبيل الله القتال دفاعاً عن الأهل.", a: ["صح", "خطأ"], c: 0 },
+            { q: "يجوز لأحد الجهاد بدون إذن ولي الأمر.", a: ["صح", "خطأ"], c: 1 },
+            { q: "جهاد المرأة الحج والعمرة.", a: ["صح", "خطأ"], c: 0 },
+            { q: "من معاني الجهاد بذل الجهد في الاستقامة على أمر الله.", a: ["صح", "خطأ"], c: 0 }
+        ];
+
+        let idx = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+        let studentData = { name: "", class: "" };
+        let allResults = [];
+        let selectedResults = new Set();
+        let resultsUnsubscribe = null;
+
+        function switchView(view) {
+            window.currentView = view;
+            ['cover-page', 'quiz-container', 'result-screen', 'review-page', 'dashboard-page'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            if(view === 'cover') document.getElementById('cover-page').classList.remove('hidden');
+            if(view === 'quiz') document.getElementById('quiz-container').classList.remove('hidden');
+            if(view === 'results') document.getElementById('result-screen').classList.remove('hidden');
+            if(view === 'review') document.getElementById('review-page').classList.remove('hidden');
+            if(view === 'dashboard') document.getElementById('dashboard-page').classList.remove('hidden');
+        }
+
+        function startQuiz() {
+            const name = document.getElementById('student-name').value.trim();
+            const cls = document.getElementById('student-class').value.trim();
+            if(!name || !cls) return showModal("تنبيه", "يرjى إدخال الاسم والفصل");
+            studentData = { name, class: cls };
+            document.getElementById('display-student-info').innerText = `الطالب: ${name} | الفصل: ${cls}`;
+            idx = 0; userAnswers.fill(null);
+            switchView('quiz'); loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[idx];
+            const labels = ['أ', 'ب', 'ج', 'د'];
+            document.getElementById('question-text').innerText = q.q;
+            document.getElementById('question-counter').innerText = `السؤال ${idx+1} من ${questions.length}`;
+            document.getElementById('progress-bar').style.width = `${((idx+1)/questions.length)*100}%`;
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            q.a.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full text-right p-4 rounded-xl font-bold flex items-start gap-2 ${userAnswers[idx] === i ? 'selected-option' : ''}`;
+                
+                // Menambahkan label أ ب ج د untuk soal nomor 1-10 (index 0-9)
+                if (idx < 10) {
+                    btn.innerHTML = `<span class="text-emerald-600 ml-2 font-black">${labels[i]})</span> <span>${opt}</span>`;
+                } else {
+                    btn.innerText = opt;
+                }
+                
+                btn.onclick = () => { userAnswers[idx] = i; loadQuestion(); };
+                container.appendChild(btn);
+            });
+            document.getElementById('prev-btn').disabled = idx === 0;
+            document.getElementById('next-nav-btn').innerText = idx === questions.length - 1 ? 'إرسال' : 'التالي';
+        }
+
+        function nextQuestion() {
+            if(idx < questions.length - 1) { idx++; loadQuestion(); }
+            else submitQuiz();
+        }
+
+        function prevQuestion() { if(idx > 0) { idx--; loadQuestion(); } }
+
+        async function submitQuiz() {
+            const unanswered = userAnswers.filter(a => a === null).length;
+            if(unanswered > 0) return showModal("تنبيه", `بقي ${unanswered} سؤالاً. هل تريد الإرسال؟`, '❓', "نعم", true, performSubmission);
+            performSubmission();
+        }
+
+        async function performSubmission() {
+            const btn = document.getElementById('next-nav-btn');
+            btn.disabled = true; btn.innerHTML = '<span class="loader"></span>';
+            
+            if (!window.currentUser) {
+                try {
+                    await window.signInAnonymously(window.auth);
+                } catch (e) {
+                    showModal("خطأ", "لم يتم تسجيل الدخول بعد. يرجى الانتظار.");
+                    btn.disabled = false; btn.innerText = "إرسال";
+                    return;
+                }
+            }
+
+            let score = 0; 
+            userAnswers.forEach((ans, i) => { if(ans === questions[i].c) score++; });
+            
+            try {
+                const resultsRef = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'quiz_results');
+                await window.addDoc(resultsRef, { 
+                    student_name: studentData.name, 
+                    student_class: studentData.class, 
+                    score, 
+                    total: questions.length, 
+                    timestamp: window.serverTimestamp() 
+                });
+                document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+                document.getElementById('result-student-name').innerText = studentData.name;
+                switchView('results');
+            } catch(e) { 
+                console.error("Submission Error:", e);
+                showModal("خطأ", "فشل الإرسال: " + e.message); 
+                btn.disabled = false; btn.innerText = "إرسال"; 
+            }
+        }
+
+        function loadReview() {
+            const container = document.getElementById('review-list');
+            const labels = ['أ', 'ب', 'ج', 'د'];
+            container.innerHTML = questions.map((q, i) => {
+                const isCorrect = userAnswers[i] === q.c;
+                let studentAns = userAnswers[i] !== null ? q.a[userAnswers[i]] : 'لم تجب';
+                let correctAns = q.a[q.c];
+                
+                // Menambahkan label pada tampilan review
+                if (i < 10) {
+                    if (userAnswers[i] !== null) studentAns = `${labels[userAnswers[i]]}) ${studentAns}`;
+                    correctAns = `${labels[q.c]}) ${correctAns}`;
+                }
+
+                return `<div class="review-card ${isCorrect ? 'correct' : 'incorrect'} shadow-sm">
+                    <p class="font-bold mb-2">${q.q}</p>
+                    <p class="text-sm">إجابتك: ${studentAns}</p>
+                    ${!isCorrect ? `<p class="text-sm text-emerald-600 font-bold">الصحيحة: ${correctAns}</p>` : ''}
+                </div>`;
+            }).join('');
+            switchView('review');
+        }
+
+        function listenToResults() {
+            if (!window.currentUser) return;
+            if (resultsUnsubscribe) resultsUnsubscribe();
+
+            const ref = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'quiz_results');
+            resultsUnsubscribe = window.onSnapshot(ref, snap => {
+                allResults = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                const body = document.getElementById('results-body');
+                if (allResults.length === 0) {
+                    body.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-gray-400">لا توجد نتائج مسجلة</td></tr>';
+                } else {
+                    body.innerHTML = allResults.map(res => `<tr>
+                        <td><input type="checkbox" onchange="toggleSelect('${res.id}', this)" class="w-4 h-4"></td>
+                        <td class="font-bold text-slate-700">${res.student_name}</td>
+                        <td>${res.student_class}</td>
+                        <td class="font-bold text-emerald-600">${res.score}/${res.total}</td>
+                        <td class="text-xs text-gray-400">${res.timestamp ? new Date(res.timestamp.seconds*1000).toLocaleString('ar-EG') : '...'}</td>
+                    </tr>`).join('');
+                }
+            }, err => {
+                console.error("Firestore Listen Error:", err);
+            });
+        }
+
+        function toggleSelect(id, cb) { 
+            if(cb.checked) selectedResults.add(id); 
+            else selectedResults.delete(id); 
+            document.getElementById('delete-selected-btn').classList.toggle('hidden', selectedResults.size === 0); 
+        }
+
+        function toggleSelectAll(masterCb) {
+            const checkboxes = document.querySelectorAll('#results-body input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                cb.checked = masterCb.checked;
+            });
+            selectedResults.clear();
+            if (masterCb.checked) {
+                allResults.forEach(r => selectedResults.add(r.id));
+            }
+            document.getElementById('delete-selected-btn').classList.toggle('hidden', selectedResults.size === 0);
+        }
+
+        async function deleteSelected() {
+            if(!confirm(`حذف ${selectedResults.size} نتيجة؟`)) return;
+            for(const id of selectedResults) {
+                try {
+                    await window.deleteDoc(window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'quiz_results', id));
+                } catch (e) {
+                    console.error("Delete error:", e);
+                }
+            }
+            selectedResults.clear();
+            document.getElementById('delete-selected-btn').classList.add('hidden');
+        }
+
+        function exportCSV() {
+            if (allResults.length === 0) return;
+            let csv = "\uFEFFالاسم,الفصل,الدرجة,التاريخ\n";
+            allResults.forEach(r => {
+                const date = r.timestamp ? new Date(r.timestamp.seconds*1000).toLocaleString('ar-EG').replace(/,/g, '') : '';
+                csv += `"${r.student_name}","${r.student_class}","${r.score}/${r.total}","${date}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a"); 
+            link.href = URL.createObjectURL(blob); 
+            link.download = `نتائج_اختبار_الجهاد_${new Date().toLocaleDateString()}.csv`; 
+            link.click();
+        }
+
+        function verifyTeacherLogin() {
+            const user = document.getElementById('teacher-username').value;
+            const pin = document.getElementById('teacher-pin').value;
+            if(user === "Ikram" && pin === "22") {
+                closeLoginModal(); 
+                switchView('dashboard');
+                listenToResults();
+            } else {
+                alert("بيانات الدخول غير صحيحة");
+            }
+        }
+
+        function openLoginModal() { document.getElementById('login-modal').style.display = 'flex'; }
+        function closeLoginModal() { document.getElementById('login-modal').style.display = 'none'; }
+        function togglePasswordVisibility() {
+            const pin = document.getElementById('teacher-pin');
+            pin.type = pin.type === 'password' ? 'text' : 'password';
+            document.getElementById('eye-open').classList.toggle('hidden');
+            document.getElementById('eye-closed').classList.toggle('hidden');
+        }
+        function showModal(t, m, i='⚠️', c='موافق', s=false, onC=null) {
+            const mod = document.getElementById('custom-modal');
+            document.getElementById('modal-title').innerText=t; 
+            document.getElementById('modal-message').innerText=m; 
+            document.getElementById('modal-icon').innerText=i;
+            document.getElementById('modal-cancel').style.display = s ? 'block' : 'none';
+            mod.style.display = 'flex';
+            document.getElementById('modal-confirm').onclick = () => { mod.style.display='none'; if(onC) onC(); };
+            document.getElementById('modal-cancel').onclick = () => mod.style.display='none';
+        }
+        function goToCover() { switchView('cover'); }
+    </script>
+</body>
+</html>
