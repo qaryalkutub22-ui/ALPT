@@ -123,6 +123,10 @@
             const [confirmSubmitModal, setConfirmSubmitModal] = useState(false);
             const [deleteModal, setDeleteModal] = useState({ show: false, message: '', onConfirm: null });
 
+            // State Manajemen Admin (Edit Judul)
+            const [editingSectionId, setEditingSectionId] = useState(null);
+            const [editTitleValue, setEditTitleValue] = useState('');
+
             // Inisialisasi Auth Firebase
             useEffect(() => {
                 const initAuth = async () => {
@@ -258,6 +262,21 @@
                         setDeleteModal({ show: false, message: '', onConfirm: null });
                     }
                 });
+            };
+
+            const handleUpdateSectionTitle = async (id) => {
+                if (!editTitleValue.trim()) return showFeedback("العنوان لا يمكن أن يكون فارغاً", "error");
+                try {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sections', id), {
+                        title: editTitleValue
+                    });
+                    setEditingSectionId(null);
+                    setEditTitleValue('');
+                    showFeedback("تم تحديث العنوان بنجاح", "success");
+                } catch (err) { 
+                    console.error(err);
+                    showFeedback("حدث خطأ", "error");
+                }
             };
 
             const handleSaveManualQuestion = async (sectionId) => {
@@ -415,7 +434,7 @@
                         {view === 'home' && (
                             <div className="text-center bg-white p-6 sm:p-10 rounded-3xl sm:rounded-[2.5rem] shadow-xl border-b-[6px] sm:border-b-[8px] border-emerald-800 animate-fade-in mx-4 sm:mx-0">
                                 <h2 className="text-2xl sm:text-4xl font-black mb-4 font-arabic leading-tight">اختبار قياس الكفاءة اللغوية</h2>
-                                <p className="text-base sm:text-lg text-slate-500 mb-6 sm:mb-10 font-arabic">نظام شامل لتقييم مستواك في اللغة العربية عبر مهارات الاستماع والقراءة والمفردات.</p>
+                                <p className="text-base sm:text-lg text-slate-500 mb-6 sm:mb-10 font-arabic">نظام شامل لتقييم مستواك في اللغة العربية عبر مهارات الاستماع والقراءة والمفردات والتراكيب.</p>
                                 <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl sm:rounded-3xl mb-8 sm:mb-10 inline-flex items-center gap-4 sm:gap-5 border border-slate-100">
                                     <Icon name="clock" size={36} className="text-emerald-800 w-7 h-7 sm:w-9 sm:h-9" />
                                     <div className="text-right">
@@ -486,11 +505,37 @@
                                             {sortedSections.map(sec => (
                                                 <div key={sec.id} className="bg-white p-6 rounded-3xl shadow-sm border group font-arabic">
                                                     <div className="flex justify-between items-center mb-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <h4 className="text-lg font-bold">{sec.title}</h4>
-                                                            <span className="bg-slate-100 text-[10px] px-2 py-1 rounded font-bold uppercase">{sec.type}</span>
+                                                        <div className="flex items-center gap-3 flex-1">
+                                                            {editingSectionId === sec.id ? (
+                                                                <div className="flex items-center gap-2 flex-1 ml-4">
+                                                                    <input
+                                                                        autoFocus
+                                                                        value={editTitleValue}
+                                                                        onChange={(e) => setEditTitleValue(e.target.value)}
+                                                                        className="flex-1 p-1 px-3 bg-slate-50 border-2 border-emerald-400 rounded-lg font-bold outline-none"
+                                                                        onKeyDown={(e) => {
+                                                                            if (e.key === 'Enter') handleUpdateSectionTitle(sec.id);
+                                                                            if (e.key === 'Escape') setEditingSectionId(null);
+                                                                        }}
+                                                                    />
+                                                                    <button onClick={() => handleUpdateSectionTitle(sec.id)} className="bg-emerald-100 text-emerald-700 p-1.5 rounded-lg hover:bg-emerald-200"><Icon name="check" size={18} /></button>
+                                                                    <button onClick={() => setEditingSectionId(null)} className="bg-red-100 text-red-600 p-1.5 rounded-lg hover:bg-red-200"><Icon name="x" size={18} /></button>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <h4 className="text-lg font-bold">{sec.title}</h4>
+                                                                    <button 
+                                                                        onClick={() => { setEditingSectionId(sec.id); setEditTitleValue(sec.title); }}
+                                                                        className="text-slate-300 hover:text-emerald-500 transition-colors"
+                                                                        title="تعديل العنوان"
+                                                                    >
+                                                                        <Icon name="pencil" size={16} />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                            <span className="bg-slate-100 text-[10px] px-2 py-1 rounded font-bold uppercase shrink-0">{sec.type}</span>
                                                         </div>
-                                                        <button onClick={() => deleteSection(sec.id)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="trash-2" size={18} /></button>
+                                                        <button onClick={() => deleteSection(sec.id)} className="text-slate-300 hover:text-red-500 transition-colors shrink-0"><Icon name="trash-2" size={18} /></button>
                                                     </div>
 
                                                     <div className="bg-slate-50 p-4 rounded-2xl space-y-4">
