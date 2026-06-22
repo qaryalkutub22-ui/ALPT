@@ -34,7 +34,7 @@
     <script type="text/babel" data-type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
             apiKey: "AIzaSyDQYYLRfvLFvk023FSflKDi6hQUSX4Jed4",
@@ -109,6 +109,7 @@
             const [timeLeft, setTimeLeft] = useState(75 * 60);
             const [timerActive, setTimerActive] = useState(false);
             const [isAdminAuth, setIsAdminAuth] = useState(false);
+            const [adminEmailInput, setAdminEmailInput] = useState('');
             const [adminPassInput, setAdminPassInput] = useState('');
             const [showReview, setShowReview] = useState(false);
             const [feedback, setFeedback] = useState({ show: false, message: '', type: 'info' });
@@ -139,8 +140,6 @@
                     try {
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                             await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
                         }
                     } catch (err) {
                         console.error("Auth error:", err);
@@ -148,7 +147,20 @@
                     }
                 };
                 initAuth();
-                const unsubscribe = onAuthStateChanged(auth, setUser);
+                const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+                    if (currentUser) {
+                        setUser(currentUser);
+                        // Jika loginnya BUKAN anonim (melainkan pakai email), otomatis dianggap sebagai Admin
+                        setIsAdminAuth(!currentUser.isAnonymous);
+                    } else {
+                        // Jika tidak ada sesi login (baru buka web / habis logout), jadikan anonim untuk peserta ujian
+                        try {
+                            await signInAnonymously(auth);
+                        } catch (err) {
+                            console.error("Anon Auth error:", err);
+                        }
+                    }
+                });
                 return () => unsubscribe();
             }, []);
 
@@ -220,12 +232,29 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
-            const handleAdminLogin = (e) => {
+            const handleAdminLogin = async (e) => {
                 e.preventDefault();
-                if (adminPassInput === 'admin123') {
+                try {
+                    // Coba login menggunakan akun Firebase yang sah
+                    await signInWithEmailAndPassword(auth, adminEmailInput, adminPassInput);
                     setIsAdminAuth(true);
-                    showFeedback("تم تسجيل الدخول بنجاح", "success");
-                } else showFeedback("كلمة المرور خاطئة", "error");
+                    showFeedback("تم تسجيل الدخول بنجاح", "success"); // Login Berhasil
+                } catch (err) {
+                    console.error("Login failed:", err);
+                    showFeedback("البريد الإلكتروني أو كلمة المرور خاطئة", "error"); // Email atau Sandi Salah
+                }
+            };
+
+            const handleAdminLogout = async () => {
+                try {
+                    await signOut(auth); // Keluar dari akun Admin
+                    setIsAdminAuth(false);
+                    setAdminEmailInput('');
+                    setAdminPassInput('');
+                    showFeedback("تم تسجيل الخروج", "info");
+                } catch (err) {
+                    console.error("Logout error:", err);
+                }
             };
 
             // Handlers Manajemen Admin
@@ -491,8 +520,9 @@
                                         <form onSubmit={handleAdminLogin} className="bg-white p-10 rounded-[2.5rem] shadow-2xl border-t-[8px] border-emerald-800 text-center">
                                             <Icon name="key-round" size={48} className="mx-auto mb-6 text-emerald-800" />
                                             <h2 className="text-2xl font-black mb-6 font-arabic">تسجيل دخول الإدارة</h2>
-                                            <input type="password" placeholder="كلمة المرور" className="w-full p-4 bg-slate-50 border rounded-2xl mb-4 text-center outline-none focus:ring-2 focus:ring-emerald-500 font-arabic" value={adminPassInput} onChange={e => setAdminPassInput(e.target.value)} />
-                                            <button className="w-full bg-emerald-800 text-white py-4 rounded-2xl font-black font-arabic transition-all active:scale-95">دخول</button>
+                                            <input type="email" placeholder="البريد الإلكتروني" required className="w-full p-4 bg-slate-50 border rounded-2xl mb-4 text-center outline-none focus:ring-2 focus:ring-emerald-500 font-arabic" value={adminEmailInput} onChange={e => setAdminEmailInput(e.target.value)} dir="ltr" />
+                                            <input type="password" placeholder="كلمة المرور" required className="w-full p-4 bg-slate-50 border rounded-2xl mb-6 text-center outline-none focus:ring-2 focus:ring-emerald-500 font-arabic" value={adminPassInput} onChange={e => setAdminPassInput(e.target.value)} dir="ltr" />
+                                            <button type="submit" className="w-full bg-emerald-800 text-white py-4 rounded-2xl font-black font-arabic transition-all active:scale-95">دخول</button>
                                         </form>
                                     </div>
                                 ) : (
@@ -532,7 +562,7 @@
                                                 <textarea placeholder="سؤال | خيار1, خيار2, خيار3, خيار4 | 0" className="w-full p-3 bg-white border rounded-xl h-32 text-sm" value={importText} onChange={e => setImportText(e.target.value)} />
                                                 <button onClick={handleQuickImport} className="w-full bg-amber-700 text-white py-3 rounded-xl font-bold mt-4 transition-all active:scale-95">استيراد</button>
                                             </div>
-                                            <button onClick={() => setIsAdminAuth(false)} className="w-full text-red-500 font-bold font-arabic hover:underline">تسجيل الخروج</button>
+                                            <button onClick={handleAdminLogout} className="w-full text-red-500 font-bold font-arabic hover:underline">تسجيل الخروج</button>
                                         </div>
 
                                         <div className="lg:col-span-2 space-y-6">
