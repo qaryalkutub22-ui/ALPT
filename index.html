@@ -562,7 +562,10 @@
                                                 <textarea placeholder="سؤال | خيار1, خيار2, خيار3, خيار4 | 0" className="w-full p-3 bg-white border rounded-xl h-32 text-sm" value={importText} onChange={e => setImportText(e.target.value)} />
                                                 <button onClick={handleQuickImport} className="w-full bg-amber-700 text-white py-3 rounded-xl font-bold mt-4 transition-all active:scale-95">استيراد</button>
                                             </div>
-                                            <button onClick={handleAdminLogout} className="w-full text-red-500 font-bold font-arabic hover:underline">تسجيل الخروج</button>
+                                            
+                                            <button onClick={handleAdminLogout} className="w-full bg-red-50 text-red-600 border border-red-200 py-3 rounded-2xl font-black font-arabic flex items-center justify-center gap-2 hover:bg-red-100 transition-colors shadow-sm active:scale-95">
+                                                <Icon name="log-out" size={20} /> تسجيل الخروج
+                                            </button>
                                         </div>
 
                                         <div className="lg:col-span-2 space-y-6">
